@@ -3,6 +3,7 @@ import User from "../../models/User.js";
 import gravatar from "gravatar";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import passport from "passport";
 
 const router = express.Router();
 
@@ -11,25 +12,29 @@ router.get("/test", (req, res) => res.json({ msg: "Users Works" }));
 
 // register users
 router.post("/register", async (req, res) => {
-  const emailExist = await User.findOne({ email: req.body.email });
+  try {
+    const emailExist = await User.findOne({ email: req.body.email });
 
-  if (emailExist) {
-    return res.status(400).json({ email: "Email already exixts" });
+    if (emailExist) {
+      return res.status(400).json({ email: "Email already exixts" });
+    }
+    const avatar = gravatar.url(req.body.email, {
+      s: "200",
+      r: "pg",
+      d: "404",
+    });
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    const newUser = new User({
+      name: req.body.name,
+      email: req.body.email,
+      avatar: avatar,
+      password: hashedPassword,
+    });
+  } catch (error) {
+    return res.status(400).json({ msg: "No Acess" });
   }
-  const avatar = gravatar.url(req.body.email, {
-    s: "200",
-    r: "pg",
-    d: "404",
-  });
-
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(req.body.password, salt);
-  const newUser = new User({
-    name: req.body.name,
-    email: req.body.email,
-    avatar: avatar,
-    password: hashedPassword,
-  });
 });
 
 //log in user/ jwt token
@@ -54,5 +59,13 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ msg: "No access" });
   }
 });
+
+router.get(
+  "/current",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    res.json({ msg: "Success" });
+  }
+);
 
 export default router;
