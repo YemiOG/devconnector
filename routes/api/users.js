@@ -11,6 +11,7 @@ const router = express.Router();
 router.get("/test", (req, res) => res.json({ msg: "Users Works" }));
 
 // register users
+//@
 router.post("/register", async (req, res) => {
   try {
     const emailExist = await User.findOne({ email: req.body.email });
@@ -26,38 +27,36 @@ router.post("/register", async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
-    const newUser = new User({
+    const newUser = await User.create({
       name: req.body.name,
       email: req.body.email,
       avatar: avatar,
       password: hashedPassword,
     });
+    console.log("It went");
   } catch (error) {
     return res.status(400).json({ msg: "No Acess" });
   }
+  return res.status(200).json({ msg: "User created Successfully!" });
 });
 
 //log in user/ jwt token
 
-router.post("/login", async (req, res) => {
-  try {
-    const payload = { id: user.id, name: user.name, avatar: user.avatar };
+router.post("/login", async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
 
-    const token = jwt.sign(payload, process.env.TOKEN_SECRET, {
-      expiresIn: 3600,
-    });
-    res.header("auth-token", token).send(token);
+  if (!user) return res.status(404).json({ email: "User not found" });
+  console.log(req.body.password, user.password);
+  console.log(req.body);
 
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) return res.status(404).json({ email: "User not found" });
-    console.log(req.body.password, user.password);
-    console.log(req.body);
+  const validPass = await bcrypt.compare(req.body.password, user.password);
+  if (!validPass) return res.status(400).send("Email or Password in Invalid");
 
-    const validPass = await bcrypt.compare(req.body.password, user.password);
-    if (!validPass) return res.status(400).send("Email or Password in Invalid");
-  } catch (error) {
-    return res.status(400).json({ msg: "No access" });
-  }
+  const token = jwt.sign({ id: user._id }, `${process.env.TOKEN_SECRET}`, {
+    expiresIn: 3600,
+  });
+
+  return res.status(200).json({ msg: "Log in Successfully", token });
 });
 
 router.get(
