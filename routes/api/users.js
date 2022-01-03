@@ -1,4 +1,5 @@
 import express from "express";
+// load User model
 import User from "../../models/User.js";
 import gravatar from "gravatar";
 import bcrypt from "bcryptjs";
@@ -10,8 +11,9 @@ const router = express.Router();
 //tests users route - Public
 router.get("/test", (req, res) => res.json({ msg: "Users Works" }));
 
-// register users
-//@
+// @desc register new user
+// @route GET api/users/register
+// @access Public
 router.post("/register", async (req, res) => {
   try {
     const emailExist = await User.findOne({ email: req.body.email });
@@ -40,24 +42,33 @@ router.post("/register", async (req, res) => {
   return res.status(200).json({ msg: "User created Successfully!" });
 });
 
-//log in user/ jwt token
+// @desc log in user / returning jwt token
+// @route: GET api/users/login
+// @access Public
 
 router.post("/login", async (req, res, next) => {
+  // Find user by email
   const user = await User.findOne({ email: req.body.email });
-
+  // check for user
   if (!user) return res.status(404).json({ email: "User not found" });
   console.log(req.body.password, user.password);
   console.log(req.body);
-
+  // check password
   const validPass = await bcrypt.compare(req.body.password, user.password);
   if (!validPass) return res.status(400).send("Email or Password in Invalid");
 
-  const token = jwt.sign({ id: user._id }, `${process.env.TOKEN_SECRET}`, {
+  const payload = { id: user._id }; // creating JWT payload
+  // sign token
+  const token = jwt.sign(payload, `${process.env.TOKEN_SECRET}`, {
     expiresIn: 3600,
   });
 
   return res.status(200).json({ msg: "Log in Successfully", token });
 });
+
+// @desc   return current user
+// @route  GET api/users/currnt
+// @access Private
 
 router.get(
   "/current",
