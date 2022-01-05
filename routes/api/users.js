@@ -6,6 +6,9 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import passport from "passport";
 
+// Load input validation
+import validateRegisterInput from "../../validation/register.js";
+
 const router = express.Router();
 
 //tests users route - Public
@@ -15,16 +18,24 @@ router.get("/test", (req, res) => res.json({ msg: "Users Works" }));
 // @route GET api/users/register
 // @access Public
 router.post("/register", async (req, res) => {
+  const { errors, isValid } = validateRegisterInput(req.body);
+
+  // Check Validaton
+
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
   try {
+    //check if email exists on db
     const emailExist = await User.findOne({ email: req.body.email });
 
     if (emailExist) {
       return res.status(400).json({ email: "Email already exixts" });
     }
     const avatar = gravatar.url(req.body.email, {
-      s: "200",
-      r: "pg",
-      d: "404",
+      s: "200", // Size
+      r: "pg", // Rating
+      d: "404", // Default
     });
 
     const salt = await bcrypt.genSalt(10);
@@ -51,8 +62,6 @@ router.post("/login", async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
   // check for user
   if (!user) return res.status(404).json({ email: "User not found" });
-  console.log(req.body.password, user.password);
-  console.log(req.body);
   // check password
   const validPass = await bcrypt.compare(req.body.password, user.password);
   if (!validPass) return res.status(400).send("Email or Password in Invalid");
@@ -74,7 +83,11 @@ router.get(
   "/current",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    res.json({ msg: "Success" });
+    res.json({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+    });
   }
 );
 
