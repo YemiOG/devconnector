@@ -6,8 +6,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import passport from "passport";
 
-// Load input validation
+// Load input validation - register
 import validateRegisterInput from "../../validation/register.js";
+
+// Load input validation - login
+import validateLoginInput from "../../validation/login.js";
 
 const router = express.Router();
 
@@ -25,31 +28,29 @@ router.post("/register", async (req, res) => {
   if (!isValid) {
     return res.status(400).json(errors);
   }
-  try {
-    //check if email exists on db
-    const emailExist = await User.findOne({ email: req.body.email });
 
-    if (emailExist) {
-      return res.status(400).json({ email: "Email already exixts" });
-    }
-    const avatar = gravatar.url(req.body.email, {
-      s: "200", // Size
-      r: "pg", // Rating
-      d: "404", // Default
-    });
+  //check if email exists on db
+  const emailExist = await User.findOne({ email: req.body.email });
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
-    const newUser = await User.create({
-      name: req.body.name,
-      email: req.body.email,
-      avatar: avatar,
-      password: hashedPassword,
-    });
-    console.log("It went");
-  } catch (error) {
-    return res.status(400).json({ msg: "No Acess" });
+  if (emailExist) {
+    return res.status(400).json({ email: "Email already exixts" });
   }
+  const avatar = gravatar.url(req.body.email, {
+    s: "200", // Size
+    r: "pg", // Rating
+    d: "404", // Default
+  });
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(req.body.password, salt);
+  const newUser = await User.create({
+    name: req.body.name,
+    email: req.body.email,
+    avatar: avatar,
+    password: hashedPassword,
+  });
+  console.log("It went");
+
   return res.status(200).json({ msg: "User created Successfully!" });
 });
 
@@ -58,6 +59,13 @@ router.post("/register", async (req, res) => {
 // @access Public
 
 router.post("/login", async (req, res, next) => {
+  const { errors, isValid } = validateLoginInput(req.body);
+
+  //validation
+
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
   // Find user by email
   const user = await User.findOne({ email: req.body.email });
   // check for user
