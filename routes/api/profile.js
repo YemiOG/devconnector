@@ -35,6 +35,62 @@ router.get(
   }
 );
 
+// @route GET api/profile/all
+// @desc get all profiles
+// @access Public
+router.get("/all", (req, res, _next) => {
+  const errors = {};
+
+  Profile.find({ handle: req.params.handle })
+    .populate("user", ["name", "avatar"])
+    .then((profiles) => {
+      if (!profiles) {
+        errors.noprofile = "There are  no profiles";
+        res.status(404).json(errors);
+      }
+      res.json(profiles);
+    })
+    .catch((err) => res.status(404).json({ profile: "There are no profiles" }));
+});
+
+// @route GET api/profile/handle/:handle
+// @desc get profile by handle
+// @access Public
+router.get("/hand;e/:handle", (req, res, _next) => {
+  const errors = {};
+
+  Profile.findOne({ handle: req.params.handle })
+    .populate("user", ["name", "avatar"])
+    .then((profile) => {
+      if (!profile) {
+        errors.noprofile = "There is no profile for this user";
+        res.status(404).json(errors);
+      }
+      res.json(profile);
+    })
+    .catch((err) => res.status(400).json(err));
+});
+
+// @route GET api/profile/user/:user_id
+// @desc get profile by user ID
+// @access Public
+router.get("/user/:user_id", (req, res, _next) => {
+  const errors = {};
+
+  Profile.findOne({ handle: req.params.user._id })
+    .populate("user", ["name", "avatar"])
+    .then((profile) => {
+      if (!profile) {
+        errors.noprofile = "There is no profile for this user";
+        res.status(404).json(errors);
+      }
+      res.json(profile);
+    })
+    .catch((err) =>
+      res.status(400).json({ msg: "There is no profile for this user" })
+    );
+});
+
 // @route POST api/profile
 // @desc create users profile
 // @access Private
@@ -85,16 +141,18 @@ router.post(
         // create profile
 
         // check if handle exists
-        Profile.findOne({ handle: profileFields.handle }).then((profile) => {
-          if (profile) {
-            errors.handle = "The handle already exists";
-            res.status(400).json(errors);
-          }
-          // save profile
-          new Profile(profileFields)
-            .save()
-            .then((profile) => res.json(profile));
-        });
+        Profile.findOne({ handle: profileFields.handle })
+          .populate("user", ["name", "avatar"])
+          .then((profile) => {
+            if (profile) {
+              errors.handle = "The handle already exists";
+              res.status(400).json(errors);
+            }
+            // save profile
+            new Profile(profileFields)
+              .save()
+              .then((profile) => res.json(profile));
+          });
       }
     });
   }
