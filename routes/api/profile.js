@@ -127,6 +127,7 @@ router.post(
     if (req.body.linkedin) profileFields.linkedin = req.body.linkedin;
 
     Profile.findOne({ user: req.user._id }).then((profile) => {
+      console.log({ user: req.user });
       //update profile
       if (profile) {
         Profile.findByIdAndUpdate(
