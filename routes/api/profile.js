@@ -120,17 +120,16 @@ router.post(
 
     //social
     profileFields.social = {};
-    if (req.body.youtube) profileFields.youtube = req.body.youtube;
-    if (req.body.twitter) profileFields.twitter = req.body.twitter;
-    if (req.body.facebook) profileFields.facebook = req.body.facebook;
-    if (req.body.instagram) profileFields.instagram = req.body.instagram;
-    if (req.body.linkedin) profileFields.linkedin = req.body.linkedin;
+    if (req.body.youtube) profileFields.social.youtube = req.body.youtube;
+    if (req.body.twitter) profileFields.social.twitter = req.body.twitter;
+    if (req.body.facebook) profileFields.social.facebook = req.body.facebook;
+    if (req.body.instagram) profileFields.social.instagram = req.body.instagram;
+    if (req.body.linkedin) profileFields.social.linkedin = req.body.linkedin;
 
     Profile.findOne({ user: req.user._id }).then((profile) => {
-      console.log({ user: req.user });
       //update profile
       if (profile) {
-        Profile.findByIdAndUpdate(
+        Profile.findOneAndUpdate(
           { user: req.user._id },
           { $set: profileFields },
           { new: true }
@@ -191,7 +190,7 @@ router.post(
 );
 
 // @route POST api/profile/education
-// @desc add experience to profile
+// @desc add education to profile
 // @access Private
 
 router.post(
@@ -223,4 +222,39 @@ router.post(
   }
 );
 
+// @route DELETE api/profile/experience/:exp_id
+// @desc delete experience from profile
+// @access Private
+
+router.delete(
+  "/experience/:exp_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res, _next) => {
+    Profile.findOne({ user: req.user.id }).then((profile) => {
+      //Get remove index
+      const removeIndex = profile.experience
+        .map((item) => item.id)
+        .indexOf(req.params.exp_id);
+      //splice out of array
+      profile.experience.splice(removeIndex, 1);
+      //save
+      profile.save().then((profile) => res.json(profile));
+    });
+  }
+);
+// @route DELETE api/profile
+// @desc delete user and profile
+// @access Private
+
+router.delete(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  (req, res, _next) => {
+    Profile.findOneAndRemove({ user: req.user.id }).then(() => {
+      User.findOneAndRemove({ _id: req.user.id }).then(() =>
+        res.json({ sucess: true })
+      );
+    });
+  }
+);
 export default router;
