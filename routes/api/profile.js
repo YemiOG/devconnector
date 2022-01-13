@@ -92,6 +92,9 @@ router.get("/user/:user_id", (req, res, _next) => {
     );
 });
 
+// @route POST api/profile
+// @desc create profile
+// @access Private
 router.post(
   "/",
   passport.authenticate("jwt", { session: false }),
@@ -118,7 +121,7 @@ router.post(
     if (req.body.githubusername)
       profileFields.githubusername = req.body.githubusername;
 
-    //social
+    //social fields
     profileFields.social = {};
     if (req.body.youtube) profileFields.social.youtube = req.body.youtube;
     if (req.body.twitter) profileFields.social.twitter = req.body.twitter;
@@ -242,6 +245,28 @@ router.delete(
     });
   }
 );
+
+// @route DELETE api/profile/education/:edu_id
+// @desc delete education from profile
+// @access Private
+
+router.delete(
+  "/education/:edu_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res, _next) => {
+    Profile.findOne({ user: req.user.id }).then((profile) => {
+      //Get remove index
+      const removeIndex = profile.education
+        .map((item) => item.id)
+        .indexOf(req.params.edu_id);
+      //splice out of array
+      profile.education.splice(removeIndex, 1);
+      //save
+      profile.save().then((profile) => res.json(profile));
+    });
+  }
+);
+
 // @route DELETE api/profile
 // @desc delete user and profile
 // @access Private
