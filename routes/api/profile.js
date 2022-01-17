@@ -277,7 +277,7 @@ router.delete(
   (req, res, _next) => {
     Profile.findOneAndRemove({ user: req.user.id }).then(() => {
       User.findOneAndRemove({ _id: req.user.id }).then(() =>
-        res.json({ sucess: true })
+        res.json({ success: true })
       );
     });
   }
