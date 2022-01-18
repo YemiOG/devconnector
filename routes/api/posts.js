@@ -160,6 +160,11 @@ router.post(
   "/comment/:id",
   passport.authenticate("jwt", { session: false }),
   (req, res, _next) => {
+    const { errors, isValid } = validatePostInput(req.body);
+    //Check Validation
+    if (!isValid) {
+      return res.status(400).json(errors);
+    }
     Post.findById(req.params.id)
       .then((post) => {
         const newComment = {
@@ -171,6 +176,38 @@ router.post(
         //Add to comments array
         post.comments.unshift(newComment);
         //Save
+        post.save().then((post) => res.json(post));
+      })
+      .catch((err) =>
+        res.status(404).json({ postnotfound: "Posts not found" })
+      );
+  }
+);
+// @route POST api/posts/comment/:id/:comment_id
+// @desc  remove comment from post
+// @access Private
+
+router.delete(
+  "/comment/:id/:comment_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res, _next) => {
+    Post.findById(req.params.id)
+      .then((post) => {
+        // Check to see if comment exists
+        if (
+          post.comments.filter(
+            (comment) => comment._id.toString() === req.params.comment._id
+          ).length === 0
+        ) {
+          return res.status(404).json({ nocomment: "Comment doesn't exist" });
+        }
+        // Get remove index
+        const removeIndex = post.comment
+          .map((item) => item._id.toString())
+          .indexOf(req.params.comment_id);
+
+        //Splice comment out of array
+        post.comments.splice(removeIndex, 1);
         post.save().then((post) => res.json(post));
       })
       .catch((err) =>

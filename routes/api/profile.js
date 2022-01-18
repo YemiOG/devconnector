@@ -207,7 +207,7 @@ router.post(
     }
 
     Profile.findOne({ user: req.user._id }).then((profile) => {
-      //new experience
+      //new education
       const newEdu = {
         school: req.body.school,
         degree: req.body.degree,
@@ -220,7 +220,7 @@ router.post(
 
       // add to experience array
       profile.education.unshift(newEdu);
-      profile.save().then((profile) => res.json(profile));
+      profile.updateOne().then((profile) => res.json(profile));
     });
   }
 );
