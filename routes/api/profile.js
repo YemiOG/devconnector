@@ -164,7 +164,7 @@ router.post(
 router.post(
   "/experience",
   passport.authenticate("jwt", { session: false }),
-  (req, res, _next) => {
+  async (req, res, _next) => {
     const { errors, isValid } = validateExperienceInput(req.body);
 
     // check validation
@@ -173,7 +173,7 @@ router.post(
       res.status(400).json(errors);
     }
 
-    Profile.findOne({ user: req.user._id }).then((profile) => {
+    await Profile.findOne({ user: req.user._id }).then((profile) => {
       //new experience
       const newExp = {
         title: req.body.title,
@@ -199,14 +199,14 @@ router.post(
 router.post(
   "/education",
   passport.authenticate("jwt", { session: false }),
-  (req, res, _next) => {
+  async (req, res, _next) => {
     const { errors, isValid } = validateEducationInput(req.body);
     if (!isValid) {
       //return errror
       res.status(400).json(errors);
     }
 
-    Profile.findOne({ user: req.user._id }).then((profile) => {
+    await Profile.findOne({ user: req.user._id }).then((profile) => {
       //new education
       const newEdu = {
         school: req.body.school,
@@ -220,7 +220,7 @@ router.post(
 
       // add to experience array
       profile.education.unshift(newEdu);
-      profile.updateOne().then((profile) => res.json(profile));
+      profile.save().then((profile) => res.json(profile));
     });
   }
 );
@@ -232,8 +232,8 @@ router.post(
 router.delete(
   "/experience/:exp_id",
   passport.authenticate("jwt", { session: false }),
-  (req, res, _next) => {
-    Profile.findOne({ user: req.user.id }).then((profile) => {
+  async (req, res, _next) => {
+    await Profile.findOne({ user: req.user.id }).then((profile) => {
       //Get remove index
       const removeIndex = profile.experience
         .map((item) => item.id)
@@ -253,8 +253,8 @@ router.delete(
 router.delete(
   "/education/:edu_id",
   passport.authenticate("jwt", { session: false }),
-  (req, res, _next) => {
-    Profile.findOne({ user: req.user.id }).then((profile) => {
+  async (req, res, _next) => {
+    await Profile.findOne({ user: req.user.id }).then((profile) => {
       //Get remove index
       const removeIndex = profile.education
         .map((item) => item.id)
@@ -274,8 +274,8 @@ router.delete(
 router.delete(
   "/",
   passport.authenticate("jwt", { session: false }),
-  (req, res, _next) => {
-    Profile.findOneAndRemove({ user: req.user.id }).then(() => {
+  async (req, res, _next) => {
+    await Profile.findOneAndRemove({ user: req.user.id }).then(() => {
       User.findOneAndRemove({ _id: req.user.id }).then(() =>
         res.json({ success: true })
       );

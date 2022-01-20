@@ -7,9 +7,6 @@ const ProfileSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "users",
   },
-  _id: {
-    type: String,
-  },
   handle: {
     type: String,
     required: true,
@@ -37,15 +34,11 @@ const ProfileSchema = new Schema({
   },
   experience: [
     {
-      titile: {
+      title: {
         type: String,
         required: true,
       },
       company: {
-        type: String,
-        required: true,
-      },
-      location: {
         type: String,
         required: true,
       },
