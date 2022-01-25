@@ -1,28 +1,32 @@
-import React, { Component } from "react";
-import { BrowserRouter as Router, Route } from "react-router-dom";
-import Navbar from "./component/layout/Navbar";
-import Footer from "./component/layout/Footer";
-import Landing from "./component/layout/Landing";
-import "./App.css";
-import Register from "./component/auth/Register";
+import React, { Component } from 'react';
+import { render } from 'react-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import Landing from './components/layout/Landing';
+import Register from './components/auth/Register';
+import Login from './components/auth/Login';
+
+import './App.css';
 
 class App extends Component {
   render() {
     return (
-      <Router>
-        <div className="App">
-          <Navbar />
-          <Landing />
-          <Route exact path="/" component={Landing} />
-          <div className="container">
-            <Route exact path = "/register" component = {Register}/>
-            <Route exact path = "/login" component = {Login}/>
-          </div>
+      <BrowserRouter>
+      <div className="App">
 
-          <Footer />
+          <Navbar />
+      <Routes>  
+        <Route exact path="/" element={<Landing/>} /> 
+        <Route exact path="/register" element={<Register/>} />
+        <Route exact path="/login" element={<Login/>} />  
+      </Routes>
+      <Footer />
         </div>
-      </Router>
+      </BrowserRouter>
     );
   }
 }
+
 export default App;
