@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-
+import axios from 'axios';
 class Register extends Component {
   constructor(){
     super();
@@ -27,8 +27,11 @@ class Register extends Component {
       password: this.state.password,
       password2: this.state.password2
 
-    }
-    console.log(newUser)
+    };
+    axios
+    .post('/api/users/register', newUser)
+    .then(res =>console.log(res.data) )
+    .catch(err => console.log(err.response.data)); 
   }
   render() {
     return (
@@ -38,7 +41,7 @@ class Register extends Component {
             <div className="col-md-8 m-auto">
               <h1 className="display-4 text-center">Sign Up</h1>
               <p className="lead text-center">Create your DevConnector Account</p>
-              <form action="create-profile.html">
+              <form noValidate onSubmit={this.onSubmit}>
                 <div className="form-group">
                   <input 
                   type= 'text' 
@@ -58,7 +61,6 @@ class Register extends Component {
                   onChange={this.onChange}
                   required/>
                   <small className="form-text text-muted">This Site uses Gravatar, so if you want a profile image, use a Gravatar email </small>
-
                 </div>
                 <div className="form-group">
                   <input 
@@ -80,7 +82,6 @@ class Register extends Component {
                   </div>
                   <input type ='submit' className="btn btn-info btn-block mt-4"/>
                   </form>
-
             </div>
           </div>
         </div>
