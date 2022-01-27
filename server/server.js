@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import users from "./routes/api/users.js";
 import profile from "./routes/api/profile.js";
+import cors from 'cors';
 import posts from "./routes/api/posts.js";
 import passport from "passport";
 
@@ -13,6 +14,7 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors());
 
 // Connect to MongoDB
 mongoose.connect(process.env.DB_CONNECT, { useNewUrlParser: true }, () =>
