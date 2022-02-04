@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import users from "./routes/api/users.js";
 import profile from "./routes/api/profile.js";
-import cors from 'cors';
+import cors from "cors";
 import posts from "./routes/api/posts.js";
 import passport from "passport";
 
