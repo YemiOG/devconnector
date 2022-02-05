@@ -1,8 +1,17 @@
 import React, { Component } from "react";
-import axios from "axios";
+import { PropTypes } from "prop-types";
+import { useHistory } from "react-router-dom";
 import classnames from "classnames";
 import { connect } from "react-redux";
 import { registerUser } from "../../actions/authActions";
+
+const withRouter = (Component) => {
+  const Wrapper = (props) => {
+    const history = useHistory();
+    return <Component history={history} {...props} />;
+  };
+  return Wrapper;
+};
 
 class Register extends Component {
   constructor() {
@@ -18,6 +27,12 @@ class Register extends Component {
     this.onSubmit = this.onSubmit.bind(this);
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.errors) {
+      this.setState({ errors: nextProps.errors });
+    }
+  }
+
   onChange(e) {
     this.setState({ [e.target.name]: e.target.value });
   }
@@ -30,10 +45,7 @@ class Register extends Component {
       password: this.state.password,
       password2: this.state.password2,
     };
-    axios
-      .post("http://localhost:5555/api/users/register", newUser)
-      .then((res) => console.log(res.data))
-      .catch((err) => this.setState({ errors: err.response.data }));
+    this.props.registerUser(newUser, this.props.history);
   }
   render() {
     const { errors } = this.state;
@@ -71,7 +83,6 @@ class Register extends Component {
                     name="email"
                     value={this.state.email}
                     onChange={this.onChange}
-                    required
                   />
                   <small className="form-text text-muted">
                     This Site uses Gravatar, so if you want a profile image, use
@@ -89,7 +100,6 @@ class Register extends Component {
                     name="password"
                     value={this.state.password}
                     onChange={this.onChange}
-                    required
                   />
                   {errors.password && <div className="invalid-feedback"></div>}
                 </div>
@@ -103,7 +113,6 @@ class Register extends Component {
                     name="password2"
                     value={this.state.password2}
                     onChange={this.onChange}
-                    required
                   />
                   {errors.password2 && <div className="invalid-feedback"></div>}
                 </div>
@@ -116,4 +125,12 @@ class Register extends Component {
     );
   }
 }
-export default connect(null, { registerUser })(Register);
+Register.propTypes = {
+  registerUser: PropTypes.func.isRequired,
+  auth: PropTypes.object.isRequired,
+  errors: PropTypes.object.isRequired,
+};
+const mapStateToProps = (state) => ({
+  auth: state.auth,
+});
+export default connect(mapStateToProps, { registerUser })(withRouter(Register));
