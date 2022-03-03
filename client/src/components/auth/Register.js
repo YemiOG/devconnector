@@ -1,17 +1,11 @@
 import React, { Component } from "react";
 import { PropTypes } from "prop-types";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import classnames from "classnames";
 import { connect } from "react-redux";
 import { registerUser } from "../../actions/authActions";
 
-const withRouter = (Component) => {
-  const Wrapper = (props) => {
-    const history = useHistory();
-    return <Component history={history} {...props} />;
-  };
-  return Wrapper;
-};
+const Navigate = useNavigate;
 
 class Register extends Component {
   constructor() {
@@ -133,4 +127,4 @@ Register.propTypes = {
 const mapStateToProps = (state) => ({
   auth: state.auth,
 });
-export default connect(mapStateToProps, { registerUser })(withRouter(Register));
+export default connect(mapStateToProps, { registerUser })(Navigate(Register));
